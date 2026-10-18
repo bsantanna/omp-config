@@ -1,0 +1,77 @@
+{
+  "version": 2,
+  "plugins": {
+    "voltagent-lang@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-lang___1.0.4",
+        "version": "1.0.4",
+        "installedAt": "2026-10-18T14:02:19.106Z",
+        "lastUpdated": "2026-10-18T14:02:19.106Z"
+      }
+    ],
+    "voltagent-infra@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-infra___1.0.1",
+        "version": "1.0.1",
+        "installedAt": "2026-10-18T14:02:56.570Z",
+        "lastUpdated": "2026-10-18T14:02:56.570Z"
+      }
+    ],
+    "voltagent-qa-sec@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-qa-sec___1.1.2",
+        "version": "1.1.2",
+        "installedAt": "2026-10-18T14:04:28.569Z",
+        "lastUpdated": "2026-10-18T14:04:28.569Z"
+      }
+    ],
+    "voltagent-data-ai@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-data-ai___1.0.2",
+        "version": "1.0.2",
+        "installedAt": "2026-10-18T14:05:10.839Z",
+        "lastUpdated": "2026-10-18T14:05:10.839Z"
+      }
+    ],
+    "voltagent-dev-exp@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-dev-exp___1.0.3",
+        "version": "1.0.3",
+        "installedAt": "2026-10-18T14:06:21.726Z",
+        "lastUpdated": "2026-10-18T14:06:21.726Z"
+      }
+    ],
+    "voltagent-domains@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-domains___1.0.4",
+        "version": "1.0.4",
+        "installedAt": "2026-10-18T14:07:05.397Z",
+        "lastUpdated": "2026-10-18T14:07:05.397Z"
+      }
+    ],
+    "voltagent-biz@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-biz___1.0.5",
+        "version": "1.0.5",
+        "installedAt": "2026-10-18T14:10:11.791Z",
+        "lastUpdated": "2026-10-18T14:10:11.791Z"
+      }
+    ],
+    "voltagent-research@voltagent-subagents": [
+      {
+        "scope": "user",
+        "installPath": "__OMP_HOME__/.omp/plugins/cache/plugins/voltagent-subagents___voltagent-research___1.0.4",
+        "version": "1.0.4",
+        "installedAt": "2026-10-18T14:11:51.401Z",
+        "lastUpdated": "2026-10-18T14:11:51.401Z"
+      }
+    ]
+  }
+}

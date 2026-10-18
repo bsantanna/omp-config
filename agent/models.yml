@@ -1,0 +1,15 @@
+providers:
+  lan-llm:
+    baseUrl: https://llm-gw-eu.btech.software/v1
+    api: openai-completions
+    auth: apiKey
+    apiKey: LAN_LLM_API_KEY
+    discovery:
+      type: openai-models-list
+    modelOverrides:
+      GLM-5.3-Flash-EXL3:
+        input: [text, image]
+        contextWindow: 1000000
+        compat:
+          stripImageInput: false
+

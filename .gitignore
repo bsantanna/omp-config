@@ -1,0 +1,5 @@
+# Real API key lives here per machine — never commit it.
+agent/.env
+
+# OS noise
+.DS_Store
