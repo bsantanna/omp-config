@@ -1,5 +1,9 @@
 # Real API key lives here per machine — never commit it.
 agent/.env
 
+# Transient: import backups, export's preserved repo-local .env
+backup-*/
+.env.preserved
+
 # OS noise
 .DS_Store
