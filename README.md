@@ -12,7 +12,7 @@ both platforms by default).
 | `agent/config.yml` | global omp settings |
 | `agent/models.yml` | `lan-llm` gateway provider + model overrides (key as env name) |
 | `agent/agents/` | task agents |
-| `agent/skills/`, `agent/commands/` | feature-dev skill + command |
+| `agent/skills/`, `agent/commands/` | feature-dev skill + command, Cloudflare `security-audit` skill (vendored, pinned) |
 | `plugins/` | superpowers + voltagent-* marketplace plugins (full tree incl. cache) |
 | `marketplaces.json` | marketplace registry |
 | `migrate-claude-agents.sh` | helper used to migrate Claude agents |
