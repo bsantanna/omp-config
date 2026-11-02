@@ -70,3 +70,7 @@ Absolute home paths in plugin metadata (`marketplaces.json`,
 `installed_plugins.json`, `node_modules` symlinks) are stored as
 `__OMP_HOME__` placeholders and rewritten to the local home directory on
 import, so the repo works under any username on Linux and macOS.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
