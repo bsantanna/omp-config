@@ -209,6 +209,7 @@ Testing, security, and code quality experts.
 - [**error-detective**](categories/04-quality-security/error-detective.md) - Error analysis and resolution expert
 - [**penetration-tester**](categories/04-quality-security/penetration-tester.md) - Ethical hacking specialist
 - [**performance-engineer**](categories/04-quality-security/performance-engineer.md) - Performance optimization expert
+- [**ponder-auditor**](categories/04-quality-security/ponder-auditor.md) - Convergent multi-pass codebase, UI, and security deliberation specialist with 100% coverage gate and epistemic silence
 - [**powershell-security-hardening**](categories/04-quality-security/powershell-security-hardening.md) - PowerShell security hardening and compliance specialist
 - [**qa-expert**](categories/04-quality-security/qa-expert.md) - Test automation specialist
 - [**security-auditor**](categories/04-quality-security/security-auditor.md) - Security vulnerability expert
@@ -273,6 +274,7 @@ Domain-specific technology experts.
 - [**iot-engineer**](categories/07-specialized-domains/iot-engineer.md) - IoT systems developer
 - [**m365-admin**](categories/07-specialized-domains/m365-admin.md) - Microsoft 365, Exchange Online, Teams, and SharePoint administration specialist
 - [**mobile-app-developer**](categories/07-specialized-domains/mobile-app-developer.md) - Mobile application specialist
+- [**motion-director**](categories/07-specialized-domains/motion-director.md) - Motion graphics and deterministic video rendering specialist
 - [**payment-integration**](categories/07-specialized-domains/payment-integration.md) - Payment systems expert
 - [**quant-analyst**](categories/07-specialized-domains/quant-analyst.md) - Quantitative analysis specialist
 - [**risk-manager**](categories/07-specialized-domains/risk-manager.md) - Risk assessment and management expert
@@ -299,6 +301,7 @@ Product management and business analysis.
 - [**scrum-master**](categories/08-business-product/scrum-master.md) - Agile methodology expert
 - [**technical-writer**](categories/08-business-product/technical-writer.md) - Technical documentation specialist
 - [**telegram-ads-analyst**](categories/08-business-product/telegram-ads-analyst.md) - Telegram channel ad vetting and pricing specialist
+- [**ux-microcopy-reviewer**](categories/08-business-product/ux-microcopy-reviewer.md) - UI microcopy review specialist
 - [**ux-researcher**](categories/08-business-product/ux-researcher.md) - User research expert
 - [**wordpress-master**](categories/08-business-product/wordpress-master.md) - WordPress development and optimization expert
 - [**content-quality-editor**](categories/08-business-product/content-quality-editor.md) - AI content quality specialist using unslop to strip AI writing patterns before publishing

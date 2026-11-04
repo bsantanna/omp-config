@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "langfuse": {
+      "url": "https://langfuse.btech.software/api/public/mcp",
+      "headers": {
+        "Authorization": "Basic ${LANGFUSE_API_KEY}"
+      }
+    }
+  }
+}

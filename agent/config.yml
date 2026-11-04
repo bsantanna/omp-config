@@ -1,4 +1,5 @@
 setupVersion: 2
-enabledProviders: ["claude-plugins"]
+enabledProviders:
+  - claude-plugins
 modelRoles:
-  {}
+  default: lan-llm/DeepSeek-V4.1-Flash-1017
