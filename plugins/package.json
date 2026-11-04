@@ -2,6 +2,7 @@
   "name": "omp-plugins",
   "private": true,
   "dependencies": {
+    "pi-mcp-adapter": "npm:pi-mcp-adapter@^7.0.1",
     "superpowers": "https://github.com/obra/superpowers"
   }
 }

@@ -6,7 +6,9 @@
 #   --commit   stage and commit the result
 #
 # The snapshot never contains: sessions, history, model caches, agent.db,
-# .env, or the literal API key (models.yml stores an env-var name instead).
+# .env, literal API keys (models.yml / mcp.json store env-var names instead),
+# or npm-installed plugin deps (import.sh reinstalls them from bun.lock, so
+# platform-specific native binaries never enter the repo).
 # Absolute home paths in plugin metadata are stored as __OMP_HOME__ and
 # rewritten back by import.sh, so the repo is username-agnostic.
 set -eu
@@ -59,6 +61,7 @@ rm -f "$DEST/marketplaces.json" "$DEST/migrate-claude-agents.sh"
 mkdir -p "$DEST/agent"
 
 cp "$SRC/agent/config.yml" "$SRC/agent/models.yml" "$DEST/agent/"
+if [ -f "$SRC/agent/mcp.json" ]; then cp "$SRC/agent/mcp.json" "$DEST/agent/"; fi
 for d in agents skills commands; do
   if [ -d "$SRC/agent/$d" ]; then cp -R "$SRC/agent/$d" "$DEST/agent/"; fi
 done
@@ -67,6 +70,11 @@ if [ -d "$SRC/plugins" ]; then
   cp -R "$SRC/plugins" "$DEST/plugins"
   # Nested .git dirs (marketplace catalog clones) cannot be tracked.
   find "$DEST/plugins" -type d -name .git -prune -exec rm -rf {} +
+  # npm deps are reinstalled from bun.lock on import; keep only the
+  # marketplace-plugin symlinks omp creates.
+  if [ -d "$DEST/plugins/node_modules" ]; then
+    find "$DEST/plugins/node_modules" -mindepth 1 -maxdepth 1 ! -type l -exec rm -rf {} +
+  fi
 fi
 for f in marketplaces.json migrate-claude-agents.sh; do
   if [ -f "$SRC/$f" ]; then cp "$SRC/$f" "$DEST/"; fi
@@ -82,10 +90,24 @@ if grep -q '^[[:space:]]*apiKey:' "$SRC/agent/models.yml"; then
   fi
 fi
 
+# mcp.json: literal Basic credential -> ${LANGFUSE_API_KEY} (pi-mcp-adapter
+# interpolates env vars in headers; omp loads agent/.env into the env).
+LFVAL=""
+if [ -f "$DEST/agent/mcp.json" ]; then
+  LFVAL=$(perl -ne 'print $1 if /"Authorization"\s*:\s*"Basic\s+([^"]+)"/i' "$SRC/agent/mcp.json")
+  perl -pi -e 's{("Authorization"\s*:\s*"Basic\s+)[^"]*(")}{$1\${LANGFUSE_API_KEY}$2}gi' "$DEST/agent/mcp.json"
+  if [ -n "$LFVAL" ] && ! grep -qF '"Basic ${LANGFUSE_API_KEY}"' "$DEST/agent/mcp.json"; then
+    echo "error: mcp.json Authorization rewrite did not land" >&2
+    abort
+  fi
+fi
+
 cat > "$DEST/agent/.env.example" <<'EOF'
 # Copy to agent/.env (gitignored) on this machine, or let import.sh prompt
-# for the value. omp also reads LAN_LLM_API_KEY from the process environment.
+# for the values. omp also reads these from the process environment.
 LAN_LLM_API_KEY=
+# base64 of "<langfuse public key>:<langfuse secret key>" (Basic auth for MCP)
+LANGFUSE_API_KEY=
 EOF
 
 # Absolute old-home paths -> __OMP_HOME__ placeholder.
@@ -103,21 +125,31 @@ if [ -d "$DEST/plugins/node_modules" ]; then
 fi
 
 # ── 3. secret gate ───────────────────────────────────────────────────────
-# Exact-value check first: any residual copy of the original key aborts.
+# Exact-value check first: any residual copy of an original key aborts.
 KEYVAL=$(sed -n 's/^[[:space:]]*apiKey:[[:space:]]*//p' "$SRC/agent/models.yml" | sed -n '1p')
 KEYVAL="${KEYVAL%\"}"; KEYVAL="${KEYVAL#\"}"; KEYVAL="${KEYVAL%\'}"; KEYVAL="${KEYVAL#\'}"
-if [ -n "$KEYVAL" ] && [ "$KEYVAL" != "LAN_LLM_API_KEY" ]; then
-  if grep -RIlF -- "$KEYVAL" "$DEST/agent" "$DEST/marketplaces.json" "$DEST/migrate-claude-agents.sh" 2>/dev/null; then
+[ "$KEYVAL" != "LAN_LLM_API_KEY" ] || KEYVAL=""
+[ "$LFVAL" != '${LANGFUSE_API_KEY}' ] || LFVAL=""
+for secret in "$KEYVAL" "$LFVAL"; do
+  [ -n "$secret" ] || continue
+  if grep -RIlF -- "$secret" "$DEST/agent" "$DEST/plugins" "$DEST/marketplaces.json" "$DEST/migrate-claude-agents.sh" 2>/dev/null; then
     echo "POSSIBLE SECRET STAGED (exact key value found in the files above) — aborting" >&2
     abort
   fi
-fi
+done
 # Shape heuristic with a left boundary so prose like "task-..." never matches.
 # Filenames only — matching lines would print the secret itself.
 leaked=$(grep -RIlE '(^|[^A-Za-z0-9])sk-[A-Za-z0-9_-]{12,}' \
   "$DEST/agent" "$DEST/marketplaces.json" "$DEST/migrate-claude-agents.sh" 2>/dev/null || true)
 if [ -n "$leaked" ]; then
   echo "POSSIBLE SECRET STAGED — aborting; found sk-like strings in:" >&2
+  echo "$leaked" >&2
+  abort
+fi
+# Literal Basic credentials (anything that is not a ${VAR} reference).
+leaked=$(grep -RIlE '"Basic [A-Za-z0-9+/=]{8,}"' "$DEST/agent" 2>/dev/null || true)
+if [ -n "$leaked" ]; then
+  echo "POSSIBLE SECRET STAGED — aborting; found literal Basic credentials in:" >&2
   echo "$leaked" >&2
   abort
 fi

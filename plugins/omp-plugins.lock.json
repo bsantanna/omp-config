@@ -44,6 +44,11 @@
       "version": "1.0.4",
       "enabledFeatures": null,
       "enabled": true
+    },
+    "pi-mcp-adapter": {
+      "version": "7.0.1",
+      "enabledFeatures": null,
+      "enabled": true
     }
   },
   "settings": {}
