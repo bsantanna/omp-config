@@ -7,11 +7,17 @@
 #
 # The snapshot never contains: sessions, history, model caches, agent.db,
 # .env, literal API keys (models.yml / mcp.json store env-var names instead),
+# literal endpoints (baseUrl -> __LAN_LLM_BASE_URL__, MCP url ->
+# ${LANGFUSE_MCP_URL:-default}),
 # or npm-installed plugin deps (import.sh reinstalls them from bun.lock, so
 # platform-specific native binaries never enter the repo).
 # Absolute home paths in plugin metadata are stored as __OMP_HOME__ and
 # rewritten back by import.sh, so the repo is username-agnostic.
 set -eu
+
+# Endpoint defaults (overridable per machine — see README "Endpoints").
+DEFAULT_LAN_LLM_BASE_URL="https://llm-gw-eu.btech.software/v1"
+DEFAULT_LANGFUSE_MCP_URL="https://langfuse.btech.software/api/public/mcp"
 
 COMMIT=0
 SRC="$HOME/.omp"
@@ -102,12 +108,39 @@ if [ -f "$DEST/agent/mcp.json" ]; then
   fi
 fi
 
-cat > "$DEST/agent/.env.example" <<'EOF'
+# models.yml: gateway URL -> __LAN_LLM_BASE_URL__ (omp does not expand env
+# vars in baseUrl, so import.sh renders it from LAN_LLM_BASE_URL or default).
+perl -pi -e 's{^(\s*baseUrl:)\s*\S.*$}{$1 __LAN_LLM_BASE_URL__}' "$DEST/agent/models.yml"
+if grep -q '^[[:space:]]*baseUrl:' "$SRC/agent/models.yml"; then
+  if ! grep -q '^[[:space:]]*baseUrl:[[:space:]]*__LAN_LLM_BASE_URL__$' "$DEST/agent/models.yml"; then
+    echo "error: baseUrl rewrite did not land" >&2
+    abort
+  fi
+fi
+
+# mcp.json: literal server URL -> ${LANGFUSE_MCP_URL:-default} (resolved at
+# runtime by pi-mcp-adapter). An existing ${...} reference is kept as is.
+if [ -f "$DEST/agent/mcp.json" ]; then
+  DEFAULT_LANGFUSE_MCP_URL="$DEFAULT_LANGFUSE_MCP_URL" perl -pi -e \
+    's{("url"\s*:\s*")(?!\$\{)[^"]*(")}{$1\${LANGFUSE_MCP_URL:-$ENV{DEFAULT_LANGFUSE_MCP_URL}}$2}g' \
+    "$DEST/agent/mcp.json"
+  if grep -q '"url"' "$DEST/agent/mcp.json" && grep -qE '"url"[[:space:]]*:[[:space:]]*"[^$]' "$DEST/agent/mcp.json"; then
+    echo "error: mcp.json url rewrite did not land" >&2
+    abort
+  fi
+fi
+
+cat > "$DEST/agent/.env.example" <<EOF
 # Copy to agent/.env (gitignored) on this machine, or let import.sh prompt
 # for the values. omp also reads these from the process environment.
 LAN_LLM_API_KEY=
 # base64 of "<langfuse public key>:<langfuse secret key>" (Basic auth for MCP)
 LANGFUSE_API_KEY=
+# Optional endpoint overrides (defaults shown). LAN_LLM_BASE_URL is rendered
+# into models.yml by import.sh (re-import after changing it).
+# LAN_LLM_BASE_URL=$DEFAULT_LAN_LLM_BASE_URL
+# LANGFUSE_MCP_URL is resolved at runtime by pi-mcp-adapter (restart omp).
+# LANGFUSE_MCP_URL=$DEFAULT_LANGFUSE_MCP_URL
 EOF
 
 # Absolute old-home paths -> __OMP_HOME__ placeholder.
