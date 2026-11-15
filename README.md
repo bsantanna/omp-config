@@ -83,11 +83,14 @@ Both endpoints default to the btech hosts and can be overridden per machine:
 omp does not expand env vars in `models.yml` `baseUrl`, so the repo stores
 `__LAN_LLM_BASE_URL__` and import.sh renders it from the `LAN_LLM_BASE_URL`
 environment variable, then a `LAN_LLM_BASE_URL=` line in `agent/.env`, then
-the default. Changing the gateway therefore needs a re-import. `mcp.json`
-stores `${LANGFUSE_MCP_URL:-<default>}`, so setting `LANGFUSE_MCP_URL` in the
-environment or `agent/.env` takes effect on the next omp start. export.sh
-writes both back in placeholder form, so a machine-specific URL never enters
-the repo.
+the default. A value passed via the environment is saved to `agent/.env`
+(existing entries are never overwritten), so later plain `./import.sh` runs
+keep it; changing the gateway afterwards means editing `agent/.env` and
+re-importing. `mcp.json` stores `${LANGFUSE_MCP_URL:-<default>}`, so setting
+`LANGFUSE_MCP_URL` in the environment or `agent/.env` takes effect on the next
+omp start. On export, only the `lan-llm` provider's `baseUrl` and the
+`langfuse` server's literal `url` are rewritten to these forms; other
+providers and MCP servers keep their URLs.
 
 ## Update flow
 

@@ -110,22 +110,32 @@ fi
 
 # models.yml: gateway URL -> __LAN_LLM_BASE_URL__ (omp does not expand env
 # vars in baseUrl, so import.sh renders it from LAN_LLM_BASE_URL or default).
-perl -pi -e 's{^(\s*baseUrl:)\s*\S.*$}{$1 __LAN_LLM_BASE_URL__}' "$DEST/agent/models.yml"
-if grep -q '^[[:space:]]*baseUrl:' "$SRC/agent/models.yml"; then
+# Only the lan-llm provider block is touched; other providers keep their URLs.
+perl -pi -e '
+  if (/^(\s*)lan-llm:\s*$/) { $ind = length $1; $in = 1; next }
+  if ($in && /\S/ && !/^\s*#/) { /^(\s*)/; $in = 0 if length($1) <= $ind }
+  s{^(\s*baseUrl:)\s*\S.*$}{$1 __LAN_LLM_BASE_URL__} if $in;
+' "$DEST/agent/models.yml"
+if perl -0777 -ne 'exit(/^([ \t]*)lan-llm:[ \t]*\n(?:(?:\1[ \t]+.*|[ \t]*)\n)*?\1[ \t]+baseUrl:/m ? 0 : 1)' "$SRC/agent/models.yml"; then
   if ! grep -q '^[[:space:]]*baseUrl:[[:space:]]*__LAN_LLM_BASE_URL__$' "$DEST/agent/models.yml"; then
-    echo "error: baseUrl rewrite did not land" >&2
+    echo "error: lan-llm baseUrl rewrite did not land" >&2
     abort
   fi
 fi
 
-# mcp.json: literal server URL -> ${LANGFUSE_MCP_URL:-default} (resolved at
-# runtime by pi-mcp-adapter). An existing ${...} reference is kept as is.
+# mcp.json: the langfuse server's literal url -> ${LANGFUSE_MCP_URL:-default}
+# (resolved at runtime by pi-mcp-adapter). Other servers and an existing
+# ${...} reference are kept as is.
 if [ -f "$DEST/agent/mcp.json" ]; then
-  DEFAULT_LANGFUSE_MCP_URL="$DEFAULT_LANGFUSE_MCP_URL" perl -pi -e \
-    's{("url"\s*:\s*")(?!\$\{)[^"]*(")}{$1\${LANGFUSE_MCP_URL:-$ENV{DEFAULT_LANGFUSE_MCP_URL}}$2}g' \
-    "$DEST/agent/mcp.json"
-  if grep -q '"url"' "$DEST/agent/mcp.json" && grep -qE '"url"[[:space:]]*:[[:space:]]*"[^$]' "$DEST/agent/mcp.json"; then
-    echo "error: mcp.json url rewrite did not land" >&2
+  LF_BLOCK='("langfuse"\s*:\s*)(\{(?:[^{}]++|(?2))*\})'
+  LF_BLOCK="$LF_BLOCK" DEFAULT_LANGFUSE_MCP_URL="$DEFAULT_LANGFUSE_MCP_URL" perl -0777 -pi -e '
+    s#$ENV{LF_BLOCK}#
+      my ($k, $b) = ($1, $2);
+      $b =~ s{("url"\s*:\s*")(?!\$\{)[^"]*(")}{$1\${LANGFUSE_MCP_URL:-$ENV{DEFAULT_LANGFUSE_MCP_URL}}$2};
+      "$k$b"
+    #e' "$DEST/agent/mcp.json"
+  if LF_BLOCK="$LF_BLOCK" perl -0777 -ne 'exit((/$ENV{LF_BLOCK}/ && $2 =~ /"url"\s*:\s*"(?!\$\{)/) ? 0 : 1)' "$DEST/agent/mcp.json"; then
+    echo "error: mcp.json langfuse url rewrite did not land" >&2
     abort
   fi
 fi

@@ -142,6 +142,14 @@ if [ -z "$base_url" ] && [ -f "$ENVF" ]; then
   base_from="$ENVF"
 fi
 if [ -z "$base_url" ]; then base_url="$DEFAULT_LAN_LLM_BASE_URL" base_from="default"; fi
+# An env-supplied override sticks, like the keys: persist it unless .env
+# already has an entry (never overwritten).
+if [ -n "${LAN_LLM_BASE_URL:-}" ] && ! { [ -f "$ENVF" ] && grep -q '^LAN_LLM_BASE_URL=' "$ENVF"; }; then
+  if [ -s "$ENVF" ] && [ -n "$(tail -c1 "$ENVF")" ]; then echo >> "$ENVF"; fi
+  ( umask 077; printf 'LAN_LLM_BASE_URL=%s\n' "$base_url" >> "$ENVF" )
+  chmod 600 "$ENVF"
+  echo "wrote LAN_LLM_BASE_URL to $ENVF"
+fi
 LAN_LLM_BASE_URL="$base_url" perl -pi -e \
   '$_ = join($ENV{LAN_LLM_BASE_URL}, split /\Q__LAN_LLM_BASE_URL__\E/, $_, -1)' \
   "$TARGET/agent/models.yml"
