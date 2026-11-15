@@ -10,8 +10,13 @@
 # the local home directory; plugin npm deps are reinstalled from bun.lock
 # (needs network). LAN_LLM_API_KEY and LANGFUSE_API_KEY are written to
 # agent/.env from same-named env vars or an interactive prompt (existing
-# entries are never overwritten).
+# entries are never overwritten). The models.yml __LAN_LLM_BASE_URL__
+# placeholder is rendered from LAN_LLM_BASE_URL (env, then agent/.env, then
+# the default below).
 set -eu
+
+# Endpoint default (overridable per machine — see README "Endpoints").
+DEFAULT_LAN_LLM_BASE_URL="https://llm-gw-eu.btech.software/v1"
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
 TARGET="${1:-$HOME/.omp}"
@@ -127,6 +132,29 @@ if [ -f "$TARGET/agent/mcp.json" ] && grep -qF 'LANGFUSE_API_KEY' "$TARGET/agent
 fi
 if [ -f "$ENVF" ]; then chmod 600 "$ENVF"; fi
 
+# ── 3b. endpoints ────────────────────────────────────────────────────────
+# omp does not expand env vars in models.yml baseUrl, so render it here:
+# LAN_LLM_BASE_URL env -> agent/.env entry -> default. (The MCP url is a
+# ${LANGFUSE_MCP_URL:-default} reference that pi-mcp-adapter resolves.)
+base_url="${LAN_LLM_BASE_URL:-}" base_from="LAN_LLM_BASE_URL environment variable"
+if [ -z "$base_url" ] && [ -f "$ENVF" ]; then
+  base_url=$(sed -n 's/^LAN_LLM_BASE_URL=//p' "$ENVF" | tail -n1)
+  base_from="$ENVF"
+fi
+if [ -z "$base_url" ]; then base_url="$DEFAULT_LAN_LLM_BASE_URL" base_from="default"; fi
+# An env-supplied override sticks, like the keys: persist it unless .env
+# already has an entry (never overwritten).
+if [ -n "${LAN_LLM_BASE_URL:-}" ] && ! { [ -f "$ENVF" ] && grep -q '^LAN_LLM_BASE_URL=' "$ENVF"; }; then
+  if [ -s "$ENVF" ] && [ -n "$(tail -c1 "$ENVF")" ]; then echo >> "$ENVF"; fi
+  ( umask 077; printf 'LAN_LLM_BASE_URL=%s\n' "$base_url" >> "$ENVF" )
+  chmod 600 "$ENVF"
+  echo "wrote LAN_LLM_BASE_URL to $ENVF"
+fi
+LAN_LLM_BASE_URL="$base_url" perl -pi -e \
+  '$_ = join($ENV{LAN_LLM_BASE_URL}, split /\Q__LAN_LLM_BASE_URL__\E/, $_, -1)' \
+  "$TARGET/agent/models.yml"
+echo "using LAN_LLM_BASE_URL=$base_url ($base_from)"
+
 # ── 4. self-check ────────────────────────────────────────────────────────
 status=0
 if [ -d "$TARGET/plugins/node_modules" ]; then
@@ -143,6 +171,10 @@ for f in "$TARGET/marketplaces.json" "$TARGET/plugins/installed_plugins.json"; d
     status=1
   fi
 done
+if grep -q '__LAN_LLM_BASE_URL__' "$TARGET/agent/models.yml"; then
+  echo "unresolved __LAN_LLM_BASE_URL__ placeholder in $TARGET/agent/models.yml" >&2
+  status=1
+fi
 
 echo
 echo "loaded config into $TARGET"
