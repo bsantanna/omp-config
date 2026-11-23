@@ -12,3 +12,4 @@ modelRoles:
   widget: lan-llm/DeepSeek-V4.1-Flash-1017:off
   judge: lan-llm/DeepSeek-V4.1-Flash-1017:off
   vision: lan-llm/DeepSeek-V4.1-Flash-1017:off
+defaultThinkingLevel: high
