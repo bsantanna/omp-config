@@ -3,3 +3,13 @@ enabledProviders:
   - claude-plugins
 modelRoles:
   default: lan-llm/DeepSeek-V4.1-Flash-1017
+  plan: lan-llm/DeepSeek-V4.1-Flash-1017
+  task: lan-llm/DeepSeek-V4.1-Flash-1017
+  slow: lan-llm/DeepSeek-V4.1-Flash-1017:max
+  smol: lan-llm/DeepSeek-V4.1-Flash-1017:off
+  commit: lan-llm/DeepSeek-V4.1-Flash-1017:off
+  tiny: lan-llm/DeepSeek-V4.1-Flash-1017:off
+  widget: lan-llm/DeepSeek-V4.1-Flash-1017:off
+  judge: lan-llm/DeepSeek-V4.1-Flash-1017:off
+  vision: lan-llm/DeepSeek-V4.1-Flash-1017:off
+defaultThinkingLevel: high

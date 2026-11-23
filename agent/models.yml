@@ -2,7 +2,13 @@ providers:
   lan-llm:
     baseUrl: __LAN_LLM_BASE_URL__
     api: openai-completions
+    # omp disables reasoning for side jobs (captions, widgets, :off roles) with reasoning_effort=low by default,
+    # which TensorFold (Mia's DeepSeek-V4.1 recipe) runs as "think briefly". TensorFold's own "thinking off" is
+    # reasoning_effort=none (recipe zig/patches: !thinking -> "none"), which none-effort sends.
+    compat:
+      reasoningDisableMode: none-effort
     auth: apiKey
     apiKey: LAN_LLM_API_KEY
     discovery:
       type: openai-models-list
+
